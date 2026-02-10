@@ -78,7 +78,7 @@ Keeping these folders minimal ensures clarity while still following production-r
 
 ## ⚙️ Running the Project Locally
 
-### Backend
+
 ```bash
 cd backend
 python -m venv venv
