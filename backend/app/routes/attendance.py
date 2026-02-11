@@ -1,18 +1,22 @@
-from fastapi import APIRouter, HTTPException, status, Query
+from fastapi import APIRouter, status, Query
 from app.schemas.attendance import AttendanceCreate, AttendanceResponse
 from app.services.attendance_service import (
     mark_attendance,
-    get_attendance_by_employee
+    get_attendance_by_employee,
+    list_attendance
 )
 from app.utils.validators import not_found, conflict
-
 
 router = APIRouter(prefix="/attendance", tags=["Attendance"])
 
 
-@router.post("", response_model=AttendanceResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=AttendanceResponse,
+    status_code=status.HTTP_201_CREATED
+)
 def add_attendance(attendance: AttendanceCreate):
-    result = mark_attendance(attendance.dict())
+    result = mark_attendance(attendance.model_dump())
 
     if not result:
         conflict("Attendance already marked for this employee on this date")
@@ -20,6 +24,13 @@ def add_attendance(attendance: AttendanceCreate):
     return result
 
 
+# ✅ NEW: Dashboard / global attendance
+@router.get("/", response_model=list[AttendanceResponse])
+def get_all_attendance():
+    return list_attendance()
+
+
+# ✅ Existing: per-employee attendance
 @router.get("/{employee_id}", response_model=list[AttendanceResponse])
 def get_attendance(
     employee_id: str,
