@@ -1,31 +1,33 @@
-from app.core.database import get_db
-from app.models.attendance import ATTENDANCE_COLLECTION
-
-def get_attendance_collection():
-    db = get_db()
-    return db[ATTENDANCE_COLLECTION]
+from app.core.database import attendance_collection
+from datetime import date
+from app.utils.validators import conflict
 
 
-def mark_attendance(attendance_data: dict):
-    collection = get_attendance_collection()
-
-    existing = collection.find_one({
-        "employee_id": attendance_data["employee_id"],
-        "date": attendance_data["date"]
+def mark_attendance(data: dict):
+    # Prevent duplicate attendance for same employee & date
+    existing = attendance_collection.find_one({
+        "employee_id": data["employee_id"],
+        "date": data["date"]
     })
 
     if existing:
         return None
 
-    collection.insert_one(attendance_data)
-    return attendance_data
+    attendance_collection.insert_one(data)
+    data.pop("_id", None)
+    return data
 
 
-def get_attendance_by_employee(employee_id: str, on_date: str | None = None):
-    collection = get_attendance_collection()
-
+def get_attendance_by_employee(employee_id: str, date_filter: str | None = None):
     query = {"employee_id": employee_id}
-    if on_date:
-        query["date"] = on_date
 
-    return list(collection.find(query, {"_id": 0}))
+    if date_filter:
+        query["date"] = date_filter
+
+    records = list(attendance_collection.find(query, {"_id": 0}))
+    return records
+
+
+def list_attendance():
+    records = list(attendance_collection.find({}, {"_id": 0}))
+    return records
