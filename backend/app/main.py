@@ -1,14 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.database import get_db
+
 from app.routes.employees import router as employee_router
 from app.routes.attendance import router as attendance_router
 
-app = FastAPI(title="HRMS Lite API")
+app = FastAPI(
+    title="HRMS Lite API",
+    docs_url="/docs",
+    openapi_url="/openapi.json"
+)
 
+# ✅ CORS – production safe (Vercel + Render)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # frontend
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,18 +28,3 @@ def health_check():
         "status": "ok",
         "message": "HRMS Lite backend is running"
     }
-@app.get("/db-check")
-def db_check():
-    try:
-        db = get_db()
-        collections = db.list_collection_names()
-        return {
-            "status": "success",
-            "message": "MongoDB connected successfully",
-            "collections": collections
-        }
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e)
-        }
