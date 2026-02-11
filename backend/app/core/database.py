@@ -1,8 +1,14 @@
 from pymongo import MongoClient
-from app.core.config import settings
+import os
+from dotenv import load_dotenv
 
-client = MongoClient(settings.MONGODB_URI)
-db = client[settings.DB_NAME]
+load_dotenv()
 
-def get_db():
-    return db
+MONGODB_URI = os.getenv("MONGODB_URI")
+DB_NAME = os.getenv("DB_NAME", "hrms_lite")
+
+client = MongoClient(MONGODB_URI)
+db = client[DB_NAME]
+
+employees_collection = db["employees"]
+attendance_collection = db["attendance"]   # ✅ ADD THIS LINE
