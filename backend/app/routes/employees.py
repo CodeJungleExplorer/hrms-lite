@@ -1,3 +1,6 @@
+from fastapi import HTTPException
+import traceback
+
 from fastapi import APIRouter, HTTPException, status
 from app.schemas.employee import EmployeeCreate, EmployeeResponse
 from app.services.employee_service import (
@@ -26,9 +29,16 @@ def add_employee(employee: EmployeeCreate):
     return result
 
 
-@router.get("", response_model=list[EmployeeResponse])
+@router.get("/")
 def get_employees():
-    return list_employees()
+    try:
+        employees = list(employees_collection.find())
+        return employees
+    except Exception as e:
+        print("EMPLOYEES ERROR:", e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @router.delete("/{employee_id}", status_code=status.HTTP_204_NO_CONTENT)
